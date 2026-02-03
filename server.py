@@ -7,8 +7,9 @@ broadcasts messages in real-time, and persists all activity to a log file.
 Usage:
     python server.py
 
-Default host: 127.0.0.1
-Default port: 8765
+The webapp (index.html) connects from a browser on the same machine.
+Server binds to 0.0.0.0 so both the terminal client and the browser
+client can reach it.
 """
 
 import asyncio
@@ -23,9 +24,6 @@ from dataclasses import dataclass, field, asdict
 
 # ---------------------------------------------------------------------------
 # Windows fix — must run BEFORE asyncio.run()
-# ---------------------------------------------------------------------------
-# On Windows, asyncio defaults to ProactorEventLoop which breaks websockets.
-# SelectorEventLoop fixes it. This block does nothing on Linux / macOS.
 # ---------------------------------------------------------------------------
 if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
@@ -44,8 +42,8 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
     handlers=[
-        logging.StreamHandler(),                          # terminal
-        logging.FileHandler(LOG_FILE, encoding="utf-8"),  # file
+        logging.StreamHandler(),
+        logging.FileHandler(LOG_FILE, encoding="utf-8"),
     ],
 )
 logger = logging.getLogger(__name__)
@@ -57,12 +55,11 @@ logger = logging.getLogger(__name__)
 @dataclass(eq=False)
 class Client:
     """Represents a single connected WebSocket client."""
-    websocket: object                                     # raw connection
+    websocket: object
     username:  str = "Anonymous"
     joined_at: str = field(default_factory=lambda: datetime.now().isoformat())
 
     def to_dict(self) -> dict:
-        """Serialisable snapshot (excludes the raw socket)."""
         return {"username": self.username, "joined_at": self.joined_at}
 
 
@@ -82,50 +79,44 @@ class Message:
 # Server
 # ---------------------------------------------------------------------------
 class ChatServer:
-    """
-    Manages the full lifecycle of the WebSocket chat server.
 
-    Responsibilities
-    ----------------
-    * Accept & track connected clients
-    * Route incoming messages to every connected client (broadcast)
-    * Send system notifications on join / leave
-    * Handle errors gracefully so one bad client can't crash the server
-    """
-
-    def __init__(self, host: str = "127.0.0.1", port: int = 8765):
+    def __init__(self, host: str = "0.0.0.0", port: int = 8765):
         self.host    = host
         self.port    = port
-        self.clients: set[Client] = set()                 # live connections
+        self.clients: set[Client] = set()
 
-    # ----- public API ------------------------------------------------------
+    # ----- public ----------------------------------------------------------
 
     async def start(self) -> None:
-        """Spin up the WebSocket server and block until stopped (Ctrl-C)."""
         logger.info("Server starting on ws://%s:%d", self.host, self.port)
 
-        async with websockets.serve(self._handler, self.host, self.port):
+        # origins=None  →  accept WebSocket from ANY origin (localhost browser, etc.)
+        async with websockets.serve(
+            self._handler,
+            self.host,
+            self.port,
+            origins=None,                                 # allow all origins
+        ):
             logger.info("Server is LIVE  ✓  — waiting for clients …")
-            await asyncio.Future()                        # run forever
+            logger.info("  Terminal client : python client.py")
+            logger.info("  Browser client  : open index.html in a browser")
+            await asyncio.Future()
 
-    # ----- internal helpers ------------------------------------------------
+    # ----- handler ---------------------------------------------------------
 
     async def _handler(self, websocket) -> None:
-        """Per-connection coroutine — lives for as long as the socket is open."""
         client = await self._register(websocket)
         try:
             async for raw in websocket:
                 await self._process(client, raw)
         except websockets.exceptions.ConnectionClosed:
-            pass                                          # normal disconnect
+            pass
         finally:
             await self._unregister(client)
 
     # ----- lifecycle -------------------------------------------------------
 
     async def _register(self, websocket) -> Client:
-        """Accept a new connection, assign a username, notify everyone."""
-        # First message from client must be a JSON handshake: {"username":"…"}
         try:
             handshake = json.loads(await asyncio.wait_for(websocket.recv(), timeout=5))
             username  = handshake.get("username", "Anonymous").strip() or "Anonymous"
@@ -134,20 +125,16 @@ class ChatServer:
 
         client = Client(websocket=websocket, username=username)
         self.clients.add(client)
-
         logger.info("Client connected: %s  (total: %d)", username, len(self.clients))
 
-        # Tell the new client about themselves
         welcome = Message(sender="SERVER", content=f"Welcome, {username}!", msg_type="system")
         await self._send(client, welcome)
 
-        # Tell everyone else
         notify = Message(sender="SERVER", content=f"{username} joined the chat.", msg_type="system")
         await self._broadcast(notify, exclude=client)
         return client
 
     async def _unregister(self, client: Client) -> None:
-        """Clean up a disconnected client and notify the room."""
         self.clients.discard(client)
         logger.info("Client disconnected: %s  (remaining: %d)", client.username, len(self.clients))
 
@@ -157,15 +144,13 @@ class ChatServer:
     # ----- message handling ------------------------------------------------
 
     async def _process(self, client: Client, raw: str) -> None:
-        """Validate and route a single incoming message."""
         try:
             data    = json.loads(raw)
             content = str(data.get("content", "")).strip()
 
             if not content:
-                return                                    # ignore empty payloads
+                return
 
-            # --- special commands (extensible) ---
             if content.startswith("/"):
                 await self._handle_command(client, content)
                 return
@@ -180,12 +165,6 @@ class ChatServer:
             logger.warning("Malformed message from %s", client.username)
 
     async def _handle_command(self, client: Client, cmd: str) -> None:
-        """
-        Simple slash-commands.
-        /help          – list commands
-        /users         – list connected usernames
-        /ping          – server responds with PONG
-        """
         parts   = cmd.split()
         command = parts[0].lower()
 
@@ -204,7 +183,6 @@ class ChatServer:
     # ----- transport -------------------------------------------------------
 
     async def _broadcast(self, message: Message, exclude: Client | None = None) -> None:
-        """Send a message to every connected client (optionally skip one)."""
         tasks = [
             self._send(client, message)
             for client in self.clients
@@ -215,7 +193,6 @@ class ChatServer:
 
     @staticmethod
     async def _send(client: Client, message: Message) -> None:
-        """Fire-and-forget send with per-client error isolation."""
         try:
             await client.websocket.send(message.to_json())
         except websockets.exceptions.ConnectionClosed:
