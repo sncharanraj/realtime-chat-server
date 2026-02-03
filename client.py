@@ -11,10 +11,17 @@ Default server: ws://127.0.0.1:8765
 """
 
 import asyncio
+import sys
 import websockets
 import json
-import sys
 from datetime import datetime
+
+
+# ---------------------------------------------------------------------------
+# Windows fix — must run BEFORE asyncio.run()
+# ---------------------------------------------------------------------------
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 
 # ---------------------------------------------------------------------------
@@ -120,7 +127,7 @@ class ChatClient:
 
     async def _input_loop(self) -> None:
         """Non-blocking terminal input that coexists with the listener."""
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()                # fixed: was get_event_loop()
         while self._running:
             try:
                 # Run blocking input() in a thread so we don't block the event loop

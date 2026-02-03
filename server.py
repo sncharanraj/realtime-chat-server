@@ -12,6 +12,7 @@ Default port: 8765
 """
 
 import asyncio
+import sys
 import websockets
 import json
 import logging
@@ -21,9 +22,19 @@ from dataclasses import dataclass, field, asdict
 
 
 # ---------------------------------------------------------------------------
+# Windows fix — must run BEFORE asyncio.run()
+# ---------------------------------------------------------------------------
+# On Windows, asyncio defaults to ProactorEventLoop which breaks websockets.
+# SelectorEventLoop fixes it. This block does nothing on Linux / macOS.
+# ---------------------------------------------------------------------------
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+
+# ---------------------------------------------------------------------------
 # Logging setup  –  logs go to console AND to logs/server.log
 # ---------------------------------------------------------------------------
-LOG_DIR  = os.path.join(os.path.dirname(__file__), "logs")
+LOG_DIR  = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logs")
 LOG_FILE = os.path.join(LOG_DIR, "server.log")
 
 os.makedirs(LOG_DIR, exist_ok=True)
@@ -43,7 +54,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Data models
 # ---------------------------------------------------------------------------
-@dataclass
+@dataclass(eq=False)
 class Client:
     """Represents a single connected WebSocket client."""
     websocket: object                                     # raw connection
@@ -52,7 +63,7 @@ class Client:
 
     def to_dict(self) -> dict:
         """Serialisable snapshot (excludes the raw socket)."""
-        return {"username": self.joined_at, "joined_at": self.joined_at}
+        return {"username": self.username, "joined_at": self.joined_at}
 
 
 @dataclass
@@ -194,8 +205,7 @@ class ChatServer:
 
     async def _broadcast(self, message: Message, exclude: Client | None = None) -> None:
         """Send a message to every connected client (optionally skip one)."""
-        payload = message.to_json()
-        tasks   = [
+        tasks = [
             self._send(client, message)
             for client in self.clients
             if client is not exclude
