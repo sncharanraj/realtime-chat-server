@@ -1,3 +1,110 @@
 2026-02-03 20:22:01 [INFO] Server starting on ws://127.0.0.1:8765
 2026-02-03 20:22:02 [INFO] server listening on 127.0.0.1:8765
 2026-02-03 20:22:02 [INFO] Server is LIVE  ✓  — waiting for clients …
+2026-02-03 20:29:25 [INFO] Server starting on ws://127.0.0.1:8765
+2026-02-03 20:29:38 [INFO] server closing
+2026-02-03 20:29:38 [INFO] server closed
+2026-02-03 20:29:38 [INFO] Server shut down by user.
+2026-02-03 20:29:42 [INFO] Server starting on ws://127.0.0.1:8765
+2026-02-03 20:29:43 [INFO] server listening on 127.0.0.1:8765
+2026-02-03 20:29:43 [INFO] Server is LIVE  ✓  — waiting for clients …
+2026-02-03 20:30:27 [INFO] connection open
+2026-02-03 20:30:27 [ERROR] connection handler failed
+Traceback (most recent call last):
+  File "/mnt/c/Desktop/CANVA/Python/venv/lib/python3.12/site-packages/websockets/asyncio/server.py", line 376, in conn_handler
+    await self.handler(connection)
+  File "/mnt/c/Desktop/CANVA/Python/realtime-chat-server/server.py", line 104, in _handler
+    client = await self._register(websocket)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Desktop/CANVA/Python/realtime-chat-server/server.py", line 125, in _register
+    self.clients.add(client)
+TypeError: unhashable type: 'Client'
+2026-02-03 20:30:54 [INFO] connection open
+2026-02-03 20:30:54 [ERROR] connection handler failed
+Traceback (most recent call last):
+  File "/mnt/c/Desktop/CANVA/Python/venv/lib/python3.12/site-packages/websockets/asyncio/server.py", line 376, in conn_handler
+    await self.handler(connection)
+  File "/mnt/c/Desktop/CANVA/Python/realtime-chat-server/server.py", line 104, in _handler
+    client = await self._register(websocket)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Desktop/CANVA/Python/realtime-chat-server/server.py", line 125, in _register
+    self.clients.add(client)
+TypeError: unhashable type: 'Client'
+2026-02-03 20:31:26 [INFO] connection open
+2026-02-03 20:31:26 [ERROR] connection handler failed
+Traceback (most recent call last):
+  File "/mnt/c/Desktop/CANVA/Python/venv/lib/python3.12/site-packages/websockets/asyncio/server.py", line 376, in conn_handler
+    await self.handler(connection)
+  File "/mnt/c/Desktop/CANVA/Python/realtime-chat-server/server.py", line 104, in _handler
+    client = await self._register(websocket)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Desktop/CANVA/Python/realtime-chat-server/server.py", line 125, in _register
+    self.clients.add(client)
+TypeError: unhashable type: 'Client'
+2026-02-03 20:32:25 [INFO] connection open
+2026-02-03 20:32:25 [ERROR] connection handler failed
+Traceback (most recent call last):
+  File "/mnt/c/Desktop/CANVA/Python/venv/lib/python3.12/site-packages/websockets/asyncio/server.py", line 376, in conn_handler
+    await self.handler(connection)
+  File "/mnt/c/Desktop/CANVA/Python/realtime-chat-server/server.py", line 104, in _handler
+    client = await self._register(websocket)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Desktop/CANVA/Python/realtime-chat-server/server.py", line 125, in _register
+    self.clients.add(client)
+TypeError: unhashable type: 'Client'
+2026-02-03 20:37:22 [INFO] server closing
+2026-02-03 20:37:22 [INFO] server closed
+2026-02-03 20:37:22 [INFO] Server shut down by user.
+2026-02-03 20:37:25 [INFO] Server starting on ws://127.0.0.1:8765
+2026-02-03 20:37:25 [INFO] server listening on 127.0.0.1:8765
+2026-02-03 20:37:25 [INFO] Server is LIVE  ✓  — waiting for clients …
+2026-02-03 20:37:34 [INFO] connection open
+2026-02-03 20:37:34 [ERROR] connection handler failed
+Traceback (most recent call last):
+  File "/mnt/c/Desktop/CANVA/Python/venv/lib/python3.12/site-packages/websockets/asyncio/server.py", line 376, in conn_handler
+    await self.handler(connection)
+  File "/mnt/c/Desktop/CANVA/Python/realtime-chat-server/server.py", line 115, in _handler
+    client = await self._register(websocket)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Desktop/CANVA/Python/realtime-chat-server/server.py", line 136, in _register
+    self.clients.add(client)
+TypeError: unhashable type: 'Client'
+2026-02-03 20:38:37 [INFO] connection open
+2026-02-03 20:38:37 [ERROR] connection handler failed
+Traceback (most recent call last):
+  File "/mnt/c/Desktop/CANVA/Python/venv/lib/python3.12/site-packages/websockets/asyncio/server.py", line 376, in conn_handler
+    await self.handler(connection)
+  File "/mnt/c/Desktop/CANVA/Python/realtime-chat-server/server.py", line 115, in _handler
+    client = await self._register(websocket)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Desktop/CANVA/Python/realtime-chat-server/server.py", line 136, in _register
+    self.clients.add(client)
+TypeError: unhashable type: 'Client'
+2026-02-03 20:38:43 [INFO] connection open
+2026-02-03 20:38:43 [ERROR] connection handler failed
+Traceback (most recent call last):
+  File "/mnt/c/Desktop/CANVA/Python/venv/lib/python3.12/site-packages/websockets/asyncio/server.py", line 376, in conn_handler
+    await self.handler(connection)
+  File "/mnt/c/Desktop/CANVA/Python/realtime-chat-server/server.py", line 115, in _handler
+    client = await self._register(websocket)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Desktop/CANVA/Python/realtime-chat-server/server.py", line 136, in _register
+    self.clients.add(client)
+TypeError: unhashable type: 'Client'
+2026-02-03 20:40:58 [INFO] server closing
+2026-02-03 20:40:58 [INFO] server closed
+2026-02-03 20:40:59 [INFO] Server shut down by user.
+2026-02-03 20:41:19 [INFO] Server starting on ws://127.0.0.1:8765
+2026-02-03 20:41:19 [INFO] server listening on 127.0.0.1:8765
+2026-02-03 20:41:19 [INFO] Server is LIVE  ✓  — waiting for clients …
+2026-02-03 20:41:27 [INFO] connection open
+2026-02-03 20:41:27 [INFO] Client connected: slice  (total: 1)
+2026-02-03 20:41:35 [INFO] connection open
+2026-02-03 20:41:35 [INFO] Client connected: onion  (total: 2)
+2026-02-03 20:41:37 [INFO] [CHAT] onion: hey
+2026-02-03 20:41:45 [INFO] [CHAT] slice: hello
+2026-02-03 20:41:56 [INFO] Client disconnected: onion  (remaining: 1)
+2026-02-03 20:42:36 [INFO] server closing
+2026-02-03 20:42:36 [INFO] Client disconnected: slice  (remaining: 0)
+2026-02-03 20:42:36 [INFO] server closed
+2026-02-03 20:42:36 [INFO] Server shut down by user.
