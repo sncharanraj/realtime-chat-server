@@ -108,3 +108,66 @@ TypeError: unhashable type: 'Client'
 2026-02-03 20:42:36 [INFO] Client disconnected: slice  (remaining: 0)
 2026-02-03 20:42:36 [INFO] server closed
 2026-02-03 20:42:36 [INFO] Server shut down by user.
+2026-02-03 23:40:14 [INFO] Server starting on ws://0.0.0.0:8765
+2026-02-03 23:40:14 [INFO] server listening on 0.0.0.0:8765
+2026-02-03 23:40:14 [INFO] Server is LIVE  ✓  — waiting for clients …
+2026-02-03 23:40:14 [INFO]   Terminal client : python client.py
+2026-02-03 23:40:14 [INFO]   Browser client  : open index.html in a browser
+2026-02-03 23:40:54 [INFO] connection rejected (426 Upgrade Required)
+2026-02-03 23:40:54 [ERROR] opening handshake failed
+Traceback (most recent call last):
+  File "/mnt/c/Desktop/CANVA/Python/venv/lib/python3.12/site-packages/websockets/asyncio/server.py", line 356, in conn_handler
+    await connection.handshake(
+  File "/mnt/c/Desktop/CANVA/Python/venv/lib/python3.12/site-packages/websockets/asyncio/server.py", line 207, in handshake
+    raise self.protocol.handshake_exc
+  File "/mnt/c/Desktop/CANVA/Python/venv/lib/python3.12/site-packages/websockets/server.py", line 140, in accept
+    ) = self.process_request(request)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Desktop/CANVA/Python/venv/lib/python3.12/site-packages/websockets/server.py", line 235, in process_request
+    raise InvalidUpgrade(
+websockets.exceptions.InvalidUpgrade: invalid Connection header: keep-alive
+2026-02-03 23:40:55 [INFO] connection rejected (426 Upgrade Required)
+2026-02-03 23:40:55 [ERROR] opening handshake failed
+Traceback (most recent call last):
+  File "/mnt/c/Desktop/CANVA/Python/venv/lib/python3.12/site-packages/websockets/asyncio/server.py", line 356, in conn_handler
+    await connection.handshake(
+  File "/mnt/c/Desktop/CANVA/Python/venv/lib/python3.12/site-packages/websockets/asyncio/server.py", line 207, in handshake
+    raise self.protocol.handshake_exc
+  File "/mnt/c/Desktop/CANVA/Python/venv/lib/python3.12/site-packages/websockets/server.py", line 140, in accept
+    ) = self.process_request(request)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Desktop/CANVA/Python/venv/lib/python3.12/site-packages/websockets/server.py", line 235, in process_request
+    raise InvalidUpgrade(
+websockets.exceptions.InvalidUpgrade: invalid Connection header: keep-alive
+2026-02-04 09:41:07 [INFO] Server starting on ws://0.0.0.0:8765
+2026-02-04 09:41:07 [INFO] server listening on 0.0.0.0:8765
+2026-02-04 09:41:07 [INFO] Server is LIVE  ✓  — waiting for clients …
+2026-02-04 09:41:07 [INFO]   Terminal client : python client.py
+2026-02-04 09:41:07 [INFO]   Browser client  : open index.html in a browser
+2026-02-04 09:41:26 [INFO] connection open
+2026-02-04 09:41:26 [INFO] Client connected: abhi  (total: 1)
+2026-02-04 09:41:40 [INFO] connection open
+2026-02-04 09:41:40 [INFO] Client connected: rakshi  (total: 2)
+2026-02-04 09:41:57 [INFO] [CHAT] rakshi: hi bola
+2026-02-04 09:42:10 [INFO] [CHAT] abhi: fuck you
+2026-02-04 09:42:25 [INFO] Client disconnected: rakshi  (remaining: 1)
+2026-02-04 09:43:08 [INFO] connection open
+2026-02-04 09:43:08 [INFO] Client connected: Choudhary  (total: 2)
+2026-02-04 09:43:24 [INFO] [CHAT] Choudhary: hey there
+2026-02-04 09:43:46 [INFO] [CHAT] abhi: hello chuthiya
+2026-02-04 09:44:20 [INFO] [CHAT] Choudhary: how do you da
+2026-02-04 09:44:27 [INFO] [CMD] Choudhary used /help
+2026-02-04 09:44:32 [INFO] [CMD] Choudhary used /users
+2026-02-04 09:44:38 [INFO] [CMD] Choudhary used /ping
+2026-02-04 09:44:46 [INFO] [CHAT] Choudhary: hey
+2026-02-04 09:45:41 [INFO] [CHAT] abhi: then, how's going on?
+2026-02-04 09:45:57 [INFO] [CMD] Choudhary used /users
+2026-02-04 09:46:01 [INFO] [CMD] Choudhary used /help
+2026-02-04 09:46:04 [INFO] [CMD] Choudhary used /oing
+2026-02-04 09:46:08 [INFO] [CMD] Choudhary used /ping
+2026-02-04 09:46:12 [INFO] [CMD] abhi used /ping
+2026-02-04 09:51:15 [INFO] server closing
+2026-02-04 09:51:15 [INFO] Client disconnected: abhi  (remaining: 1)
+2026-02-04 09:51:15 [INFO] Client disconnected: Choudhary  (remaining: 0)
+2026-02-04 09:51:15 [INFO] server closed
+2026-02-04 09:51:15 [INFO] Server shut down by user.

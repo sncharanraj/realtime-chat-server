@@ -391,7 +391,12 @@ html, body {
 /* ══════════════════════════════════════════════════════════════
    CONFIG
    ══════════════════════════════════════════════════════════════ */
-const WS_URL = "ws://127.0.0.1:8765";   // ← must match server.py port
+// Auto-detect WebSocket URL based on environment
+// Local dev: ws://127.0.0.1:8765
+// Deployed:  wss://your-domain.com (secure WebSocket over HTTPS)
+const WS_URL = window.location.protocol === "https:" 
+  ? `wss://${window.location.host}`
+  : "ws://127.0.0.1:8765";
 
 /* ══════════════════════════════════════════════════════════════
    STATE

@@ -80,9 +80,9 @@ class Message:
 # ---------------------------------------------------------------------------
 class ChatServer:
 
-    def __init__(self, host: str = "0.0.0.0", port: int = 8765):
+    def __init__(self, host: str = "0.0.0.0", port: int = None):
         self.host    = host
-        self.port    = port
+        self.port    = port or int(os.environ.get("PORT", 8765))
         self.clients: set[Client] = set()
 
     # ----- public ----------------------------------------------------------
