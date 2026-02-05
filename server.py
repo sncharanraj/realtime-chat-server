@@ -161,7 +161,8 @@ class ChatServer:
 # ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
-if __name__ == "__main__":
+async def main():
+    """Main async entry point."""
     port = int(os.environ.get("PORT", 8765))
     server = ChatServer()
     
@@ -172,12 +173,17 @@ if __name__ == "__main__":
     logger.info("Frontend URL: Deploy index.html to GitHub Pages")
     logger.info("=" * 60)
     
+    async with websockets.serve(
+        server._handler,
+        "0.0.0.0",
+        port,
+        origins=None,
+    ):
+        await asyncio.Future()  # run forever
+
+
+if __name__ == "__main__":
     try:
-        asyncio.run(websockets.serve(
-            server._handler,
-            "0.0.0.0",
-            port,
-            origins=None,  # Allow connections from any origin (including GitHub Pages)
-        ))
+        asyncio.run(main())
     except KeyboardInterrupt:
         logger.info("Server shut down by user.")
