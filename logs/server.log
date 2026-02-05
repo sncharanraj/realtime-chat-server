@@ -171,3 +171,8 @@ websockets.exceptions.InvalidUpgrade: invalid Connection header: keep-alive
 2026-02-04 09:51:15 [INFO] Client disconnected: Choudhary  (remaining: 0)
 2026-02-04 09:51:15 [INFO] server closed
 2026-02-04 09:51:15 [INFO] Server shut down by user.
+2026-02-04 23:37:43 [INFO] ============================================================
+2026-02-04 23:37:43 [INFO] HTTP Server LIVE on port 8000
+2026-02-04 23:37:43 [INFO] Health check: http://0.0.0.0:8000/health
+2026-02-04 23:37:43 [INFO] Landing page: http://0.0.0.0:8000/
+2026-02-04 23:37:43 [INFO] ============================================================
