@@ -1,15 +1,18 @@
 """
-Real-Time Chat Server - Render Deployment Version
-==================================================
-This version runs an HTTP server with health check for Render.
-For local WebSocket testing, use the original server.py.
+Real-Time Chat WebSocket Server
+================================
+Pure WebSocket backend for deployment on Render.
+Frontend (index.html) should be hosted separately on GitHub Pages.
 """
 
 import asyncio
 import sys
+import websockets
+import json
 import logging
 import os
-from aiohttp import web
+from datetime import datetime
+from dataclasses import dataclass, field, asdict
 
 
 # ---------------------------------------------------------------------------
@@ -20,7 +23,7 @@ if sys.platform == "win32":
 
 
 # ---------------------------------------------------------------------------
-# Logging setup
+# Logging
 # ---------------------------------------------------------------------------
 LOG_DIR  = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logs")
 LOG_FILE = os.path.join(LOG_DIR, "server.log")
@@ -39,84 +42,142 @@ logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
-# HTTP Server (for Render health checks)
+# Data models
 # ---------------------------------------------------------------------------
-async def health_check(request):
-    """Health check endpoint - aiohttp handles HEAD automatically"""
-    return web.Response(text="OK\n", status=200)
+@dataclass(eq=False)
+class Client:
+    websocket: object
+    username:  str = "Anonymous"
+    joined_at: str = field(default_factory=lambda: datetime.now().isoformat())
 
 
-async def serve_html(request):
-    """Landing page"""
-    html = """
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Chat Server</title>
-    <meta charset="utf-8">
-    <style>
-        body { font-family: system-ui, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; line-height: 1.6; }
-        h1 { color: #333; }
-        .status { color: #22c55e; font-weight: bold; }
-        code { background: #f3f4f6; padding: 2px 6px; border-radius: 3px; font-family: 'Courier New', monospace; }
-        .info { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 12px; margin: 16px 0; }
-    </style>
-</head>
-<body>
-    <h1>🚀 Real-Time Chat Server</h1>
-    <p><strong>Status:</strong> <span class="status">● Live</span></p>
-    
-    <div class="info">
-        <strong>Deployment Note:</strong> This is a health check endpoint for Render's deployment system.
-        The full WebSocket chat server with real-time messaging runs locally.
-        <p>To use locally: <code>python server_local.py</code></p>
-    </div>
-    
-    <h3>Project Repository</h3>
-    <p>View the full source code and instructions at:</p>
-    <p><a href="https://github.com/yourusername/realtime-chat-server">github.com/yourusername/realtime-chat-server</a></p>
-    
-    <h3>Features</h3>
-    <ul>
-        <li>Python asyncio backend</li>
-        <li>WebSocket real-time communication</li>
-        <li>Multi-client support</li>
-        <li>Browser + terminal clients</li>
-        <li>Command system (/help, /users, /ping)</li>
-    </ul>
-    
-    <p><small>Built as a portfolio project demonstrating backend skills</small></p>
-</body>
-</html>
-"""
-    return web.Response(text=html, content_type='text/html')
+@dataclass
+class Message:
+    sender:    str
+    content:   str
+    timestamp: str = field(default_factory=lambda: datetime.now().strftime("%H:%M:%S"))
+    msg_type:  str = "chat"
+
+    def to_json(self) -> str:
+        return json.dumps(asdict(self))
 
 
-async def start_server():
-    """Start HTTP server on Render's PORT"""
-    port = int(os.environ.get("PORT", 8000))
-    
-    app = web.Application()
-    app.router.add_get('/health', health_check)
-    app.router.add_get('/', serve_html)
-    
-    runner = web.AppRunner(app)
-    await runner.setup()
-    site = web.TCPSite(runner, '0.0.0.0', port)
-    await site.start()
-    
-    logger.info("=" * 60)
-    logger.info("HTTP Server LIVE on port %d", port)
-    logger.info("Health check: http://0.0.0.0:%d/health", port)
-    logger.info("Landing page: http://0.0.0.0:%d/", port)
-    logger.info("=" * 60)
-    
-    # Keep running
-    await asyncio.Future()
+# ---------------------------------------------------------------------------
+# Server
+# ---------------------------------------------------------------------------
+class ChatServer:
+    def __init__(self):
+        self.clients: set[Client] = set()
+
+    async def _handler(self, websocket) -> None:
+        client = await self._register(websocket)
+        try:
+            async for raw in websocket:
+                await self._process(client, raw)
+        except websockets.exceptions.ConnectionClosed:
+            pass
+        finally:
+            await self._unregister(client)
+
+    async def _register(self, websocket) -> Client:
+        try:
+            handshake = json.loads(await asyncio.wait_for(websocket.recv(), timeout=5))
+            username  = handshake.get("username", "Anonymous").strip() or "Anonymous"
+        except (json.JSONDecodeError, asyncio.TimeoutError, KeyError):
+            username = "Anonymous"
+
+        client = Client(websocket=websocket, username=username)
+        self.clients.add(client)
+        logger.info("Client connected: %s  (total: %d)", username, len(self.clients))
+
+        welcome = Message(sender="SERVER", content=f"Welcome, {username}!", msg_type="system")
+        await self._send(client, welcome)
+
+        notify = Message(sender="SERVER", content=f"{username} joined the chat.", msg_type="system")
+        await self._broadcast(notify, exclude=client)
+        return client
+
+    async def _unregister(self, client: Client) -> None:
+        self.clients.discard(client)
+        logger.info("Client disconnected: %s  (remaining: %d)", client.username, len(self.clients))
+
+        notify = Message(sender="SERVER", content=f"{client.username} left the chat.", msg_type="system")
+        await self._broadcast(notify)
+
+    async def _process(self, client: Client, raw: str) -> None:
+        try:
+            data    = json.loads(raw)
+            content = str(data.get("content", "")).strip()
+
+            if not content:
+                return
+
+            if content.startswith("/"):
+                await self._handle_command(client, content)
+                return
+
+            msg = Message(sender=client.username, content=content)
+            logger.info("[CHAT] %s: %s", client.username, content)
+            await self._broadcast(msg)
+
+        except json.JSONDecodeError:
+            err = Message(sender="SERVER", content="Invalid message format.", msg_type="error")
+            await self._send(client, err)
+            logger.warning("Malformed message from %s", client.username)
+
+    async def _handle_command(self, client: Client, cmd: str) -> None:
+        parts   = cmd.split()
+        command = parts[0].lower()
+
+        responses = {
+            "/help":  "Available commands: /help, /users, /ping",
+            "/ping":  "PONG 🏓",
+            "/users": "Online: " + ", ".join(c.username for c in self.clients),
+        }
+
+        reply_text = responses.get(command, f"Unknown command: {command}  — try /help")
+        reply      = Message(sender="SERVER", content=reply_text, msg_type="system")
+
+        logger.info("[CMD] %s used %s", client.username, command)
+        await self._send(client, reply)
+
+    async def _broadcast(self, message: Message, exclude: Client | None = None) -> None:
+        tasks = [
+            self._send(client, message)
+            for client in self.clients
+            if client is not exclude
+        ]
+        if tasks:
+            await asyncio.gather(*tasks)
+
+    @staticmethod
+    async def _send(client: Client, message: Message) -> None:
+        try:
+            await client.websocket.send(message.to_json())
+        except websockets.exceptions.ConnectionClosed:
+            logger.debug("Send failed for %s – connection already closed.", client.username)
 
 
+# ---------------------------------------------------------------------------
+# Entry point
+# ---------------------------------------------------------------------------
 if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8765))
+    server = ChatServer()
+    
+    logger.info("=" * 60)
+    logger.info("WebSocket Chat Server Starting")
+    logger.info("=" * 60)
+    logger.info("Listening on: ws://0.0.0.0:%d", port)
+    logger.info("Frontend URL: Deploy index.html to GitHub Pages")
+    logger.info("=" * 60)
+    
     try:
-        asyncio.run(start_server())
+        asyncio.run(websockets.serve(
+            server._handler,
+            "0.0.0.0",
+            port,
+            origins=None,  # Allow connections from any origin (including GitHub Pages)
+        ))
     except KeyboardInterrupt:
         logger.info("Server shut down by user.")
